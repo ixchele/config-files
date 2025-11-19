@@ -16,7 +16,7 @@ opt.timeoutlen = 300
 opt.splitright = true
 opt.splitbelow = true
 opt.list = true
-opt.listchars = { tab = "  ", trail = "·", nbsp = " " }
+opt.listchars = { tab = "> ", trail = "·", nbsp = " " }
 opt.shiftwidth = 4
 opt.tabstop = 4
 opt.inccommand = "split"

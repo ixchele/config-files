@@ -33,6 +33,11 @@ keymap("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Resize window larg
 keymap("n", "<S-l>", ":bnext<CR>", { desc = "Go to next buffer", noremap=true, silent=true })
 keymap("n", "<S-h>", ":bprevious<CR>", { desc = "Go to previous buffer", noremap=true, silent=true })
 
+keymap("n", "<leader>sv", ":vsplit<CR>", { desc = "Split vertically", noremap=true, silent=true })
+keymap("n", "<leader>sh", ":split<CR>", { desc = "Split horizontally", noremap=true, silent=true })
+-- Close current split
+keymap("n", "<leader>c", "<C-w>c", { desc = "Close current window", noremap=true, silent=true })
+
 -- ========================
 -- Text Editing
 -- ========================
@@ -46,13 +51,18 @@ keymap("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up", noremap=true,
 
 -- Paste without losing clipboard content
 keymap("v", "p", '"_dP', { desc = "Paste over selection without overwriting register", noremap=true, silent=true })
-
+-- Select all
+keymap("n", "<leader>a", "ggVG", { desc = "Select all", noremap=true, silent=true })
 -- ========================
 -- Clipboard
 -- ========================
 -- Copy to system clipboard
 keymap({ "n", "v" }, "<leader>y", '"+y', { desc = "Copy to system clipboard", noremap=true, silent=true })
 keymap("n", "<leader>Y", '"+Y', { desc = "Copy line to system clipboard", noremap=true, silent=true })
+
+-- Paste from system clipboard
+keymap({ "n", "v" }, "<leader>p", '"+p', { desc = "Copy to system clipboard", noremap=true, silent=true })
+keymap("n", "<leader>P", '"+P', { desc = "Past line from system clipboard", noremap=true, silent=true })
 
 -- Delete without yanking
 keymap({ "n", "v" }, "<leader>d", '"_d', { desc = "Delete without copying", noremap=true, silent=true })
