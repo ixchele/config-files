@@ -12,7 +12,7 @@ CXX="c++"
 CPPFLAGS="-Wall -Wextra -Werror -std=c++98"
 INCLUDES="-I."
 LFLAGS=""
-SRC="*.cpp"
+SRC=($(find . -name '*.cpp'))
 
 # --- Parse arguments ---
 for arg in "$@"; do
@@ -27,9 +27,6 @@ for arg in "$@"; do
     esac
 done
 
-# --- Expand SRC ---
-SRC_EXPANDED=$(printf "%s " $SRC 2>/dev/null || echo "$SRC")
-
 # --- Build the Makefile ---
 cat > Makefile <<EOF
 # --- Colors ---
@@ -43,10 +40,10 @@ CLEAR = \033[2K\r
 # --- Variables ---
 NAME = $NAME
 CXX = $CXX
-CPPFLAGS = $CPPFLAGS
 INCLUDES = $INCLUDES
-LFLAGS = $LFLAGS
-SRC = $SRC_EXPANDED
+CPPFLAGS = $CPPFLAGS \$(INCLUDES)
+LFLAGS = $LFLAGS \$(CPPFLAGS)
+SRC = ${SRC[@]}
 OBJ = \$(SRC:%.cpp=obj/%.o)
 
 all: \$(NAME)
@@ -59,7 +56,7 @@ all: \$(NAME)
 obj/%.o: %.cpp
 	@mkdir -p \$(dir \$@)
 	@printf "[\$(GREEN)\$(BOLD) OK \$(RESET)\$(BOLD)]\$(RESET) compiling \$(BOLD)\$@...\$(RESET)\$(CLEAR)"
-	@\$(CXX) -c \$(CPPFLAGS) \$< \$(INCLUDES) -o \$@
+	@\$(CXX) -c \$(CPPFLAGS) \$< -o \$@
 
 clean:
 	@printf "\$(RED)\$(BOLD)cleaning object files...\n"
@@ -72,6 +69,7 @@ fclean: clean
 re: fclean all
 
 .PHONY: all clean fclean re
+.SECONDARY: \$(OBJ)
 EOF
 
 echo "Makefile generated for '$NAME'"
