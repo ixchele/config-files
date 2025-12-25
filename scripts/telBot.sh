@@ -8,6 +8,7 @@ CHAT_ID="6738733709"
 API_URL="https://api.telegram.org/bot$TOKEN"
 OFFSET=0
 FT_LOCK_NAME="ft_lock"
+CURRENT_DIR="$HOME"
 
 last_update=$(curl -s "$API_URL/getUpdates" | jq 'if .result|length>0 then .result[-1].update_id + 1 else 0 end')
 curl -s "$API_URL/getUpdates?offset=$last_update" >/dev/null
@@ -120,8 +121,31 @@ while true; do
                 ;;
         esac
 
+		if [[ "$text" == cd* ]]; then
+			read -r _ path <<< "$text"
+
+			# cd sans argument
+			if [[ -z "$path" ]]; then
+				CURRENT_DIR="$HOME"
+				send_message "📂 $CURRENT_DIR"
+				continue
+			fi
+
+			# chemin relatif
+			if [[ "$path" != /* ]]; then
+				path="$CURRENT_DIR/$path"
+			fi
+
+			if [[ -d "$path" ]]; then
+				CURRENT_DIR="$(cd "$path" && pwd)"
+				send_message "📂 $CURRENT_DIR"
+			else
+				send_message "❌ no such directory"
+			fi
+			continue
+		fi
         if [ "$handled" = false ]; then
-            output=$(bash -c "$text" 2>&1)
+            output=$(cd "$CURRENT_DIR" && bash -c "$text" 2>&1)
             send_message ">> $output"
         fi
 
